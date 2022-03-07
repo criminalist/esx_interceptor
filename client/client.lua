@@ -69,9 +69,13 @@ Citizen.CreateThread(function()
 							ESX.TriggerServerCallback('esx_interceptor:requestPlayerCars', function(isOwnedVehicle)
 									if not isOwnedVehicle then
 										statusPlane = true
-										SetPlayerWantedLevel(PlayerId(), 4, false)
-										SetPlayerWantedLevelNow(PlayerId(), true)
-										SetDispatchCopsForPlayer(PlayerId(), true)
+										if Config.Wanted then
+											SetPlayerWantedLevel(PlayerId(), 4, false)
+											SetPlayerWantedLevelNow(PlayerId(), true)
+											SetDispatchCopsForPlayer(PlayerId(), true)
+										end
+
+
 										planeVeh = CreatePlane(Px+250, Py+250, Pz+50)
 
 
@@ -104,9 +108,6 @@ Citizen.CreateThread(function()
 									end
 							end, GetVehicleNumberPlateText(vehicle))
 						end
-
-
-
 					end
 
 				end
@@ -282,7 +283,7 @@ function deleteHelicopter(vehicle, driver)
 	if not DoesEntityExist(vehicle) and DoesEntityExist(driver) then
 		DeleteEntity(driver)
 	end
-	statusPlane = false
+	statusHelicopter = false
 end
 
 function deletePlane(vehicle, driver)
@@ -298,9 +299,9 @@ function deletePlane(vehicle, driver)
 	if not DoesEntityExist(vehicle) and DoesEntityExist(driver) then
 		DeleteEntity(driver)
 	end
-	statusHelicopter = false
-end
+	statusPlane = false
 
+end
 
 
 
