@@ -150,7 +150,6 @@ function CreatePlanePed(vehicle)
 			return ped
 		end
 	end
-	statusPlane = true
 end
 
 function CreateHelicopterPed(vehicle)
@@ -299,8 +298,6 @@ function deletePlane(vehicle, driver)
 	if not DoesEntityExist(vehicle) and DoesEntityExist(driver) then
 		DeleteEntity(driver)
 	end
-	statusPlane = false
-
 end
 
 
