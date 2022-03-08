@@ -1,11 +1,13 @@
 local planeVeh = nil
-local viperVeh = nil
+local HelicopterVeh = nil
 local planePed,viperPed,blip = nil
 local x,y,z = nil
 local Px, Py, Pz = 0
 local statusPlane = false
 local statusHelicopter = false
 local current_zone
+local blipHelicopter,blipPlane = nil
+
 
 Citizen.CreateThread(function()
 	while true do
@@ -115,8 +117,7 @@ Citizen.CreateThread(function()
 		end
 
 
-		if statusPlane then --проверяем на технику и жив ли игрок
-			--Если в техники, не мертвы, иди не умираем, и не в воздухе.
+		if statusPlane then
 			if not DoesEntityExist(planeVeh) or IsEntityDead(planePed) or IsEntityDead(playerPed) or not IsEntityInAir(vehicle) then
 				statusPlane = false
 				Wait(10000)
@@ -149,7 +150,7 @@ function CreatePlanePed(vehicle)
 			return ped
 		end
 	end
-	status = true
+	statusPlane = true
 end
 
 function CreateHelicopterPed(vehicle)
@@ -186,7 +187,7 @@ function CreateHelicopterPed(vehicle)
 			return ped
 		end
 	end
-	status = true
+	statusHelicopter = true
 end
 
 
@@ -207,19 +208,19 @@ function CreatePlane(x, y, z)
 
 				SetEntityAsMissionEntity(planeVeh, true, true)
 				SetVehicleEngineOn(planeVeh, true, true, false)
-				blip = AddBlipForEntity(planeVeh)
-				SetBlipSprite(blip, 16)
-				SetBlipFlashes(blip, true)
-				SetBlipColour(blip,  75)
-				SetBlipFlashTimer(blip, 5000)
-				SetBlipDisplay(blip, 4)
+				blipPlane = AddBlipForEntity(planeVeh)
+				SetBlipSprite(blipPlane, 16)
+				SetBlipFlashes(blipPlane, true)
+				SetBlipColour(blipPlane,  75)
+				SetBlipFlashTimer(blipPlane, 5000)
+				SetBlipDisplay(blipPlane, 4)
 
-				SetBlipScale(blip, 1.0)
-				SetBlipAsShortRange(blip, true)
+				SetBlipScale(blipPlane, 1.0)
+				SetBlipAsShortRange(blipPlane, true)
 
 				BeginTextCommandSetBlipName("STRING")
 				AddTextComponentString(_U('Interceptor'))
-				EndTextCommandSetBlipName(blip)
+				EndTextCommandSetBlipName(blipPlane)
 				SetModelAsNoLongerNeeded(PlaneModel)
 				return planeVeh
 			else
@@ -239,31 +240,31 @@ function CreateHelicopter(x, y, z)
 			while not HasModelLoaded(HelicopterModel) do
 				Wait(1)
 			end
-			if not DoesEntityExist(viperVeh) then
+			if not DoesEntityExist(HelicopterVeh) then
 				local _, vector = GetNthClosestVehicleNode(x, y, z, math.random(5, 10), 0, 0, 0)
 				local sX, sY, sZ = table.unpack(vector)
 				ESX.ShowAdvancedNotification(_U('Dispatcher'),_U('Illegal_Helicopter_title'),_U('Illegal_Helicopter'), "CHAR_MP_ARMY_CONTACT", 8, 1, 1, 130)
 				Wait(2000)
-				viperVeh = CreateVehicle(HelicopterModel, sX, sY, sZ+100, 0, true, false)
+				HelicopterVeh = CreateVehicle(HelicopterModel, sX, sY, sZ+100, 0, true, false)
 
-				SetEntityAsMissionEntity(viperVeh, true, true)
-				SetVehicleEngineOn(viperVeh, true, true, false)
+				SetEntityAsMissionEntity(HelicopterVeh, true, true)
+				SetVehicleEngineOn(HelicopterVeh, true, true, false)
 
-				blip = AddBlipForEntity(viperVeh)
-				SetBlipSprite(blip, 602)
-				SetBlipFlashes(blip, true)
-				SetBlipColour(blip,  75)
-				SetBlipFlashTimer(blip, 5000)
-				SetBlipDisplay(blip, 4)
+				blipHelicopter = AddBlipForEntity(HelicopterVeh)
+				SetBlipSprite(blipHelicopter, 602)
+				SetBlipFlashes(blipHelicopter, true)
+				SetBlipColour(blipHelicopter,  75)
+				SetBlipFlashTimer(blipHelicopter, 5000)
+				SetBlipDisplay(blipHelicopter, 4)
 
-				SetBlipScale(blip, 1.0)
-				SetBlipAsShortRange(blip, true)
+				SetBlipScale(blipHelicopter, 1.0)
+				SetBlipAsShortRange(blipHelicopter, true)
 
 				BeginTextCommandSetBlipName("STRING")
 				AddTextComponentString(_U('InterceptorHelicopter'))
-				EndTextCommandSetBlipName(blip)
+				EndTextCommandSetBlipName(blipHelicopter)
 				SetModelAsNoLongerNeeded(HelicopterModel)
-				return viperVeh
+				return HelicopterVeh
 			end
 		end
 	end
