@@ -17,14 +17,7 @@ Citizen.CreateThread(function()
 		local vehicle = GetVehiclePedIsIn(playerPed, false)
 		Px, Py, Pz = table.unpack(coords)
 		current_zone = GetNameOfZone(coords.x, coords.y, coords.z) or nil
-		GetZoneFromNameId(zoneName)
-		while nametable == nil do
-			Citizen.Wait(0)
-		end
-
-		if IsEntityInZone(playerPed, "ISHEIST") then
-
-		end
+		--print(GetZoneFromNameId())
 
 		if Config.WhiteListZone ~= nil or Config.WhiteListZone ~= '' then
 			print('Config.WhiteListZone',Config.WhiteListZone)
@@ -47,7 +40,6 @@ Citizen.CreateThread(function()
 
 						if Config.CheckLicense then
 							ESX.TriggerServerCallback('esx_interceptor:requestPlayerCars', function(isOwnedVehicle)
-
 								ESX.TriggerServerCallback('esx_license:checkLicense', function(License)
 
 									if not License or not isOwnedVehicle then
