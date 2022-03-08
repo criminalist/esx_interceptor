@@ -194,7 +194,6 @@ end
 --Spawn plane
 function CreatePlane(x, y, z)
 	local PlaneModel = GetHashKey(Config.Interceptor)
-
 	if IsModelValid(PlaneModel) then
 		if IsThisModelAPlane(PlaneModel) then
 			RequestModel(PlaneModel)
