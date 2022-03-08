@@ -1,12 +1,12 @@
-local planeVeh = nil
+local attackVehicle = nil
 local HelicopterVeh = nil
-local planePed,viperPed,blip = nil
+local pilotPed,blip = nil
 local x,y,z = nil
 local Px, Py, Pz = 0
-local statusPlane = false
-local statusHelicopter = false
+local statusVehicle = false
+
 local current_zone
-local blipHelicopter,blipPlane = nil
+local blipVehicle = nil
 
 
 Citizen.CreateThread(function()
@@ -16,9 +16,31 @@ Citizen.CreateThread(function()
 		local coords = GetEntityCoords(playerPed, false)
 		local vehicle = GetVehiclePedIsIn(playerPed, false)
 		Px, Py, Pz = table.unpack(coords)
-		current_zone = GetNameOfZone(coords.x, coords.y, coords.z) or ''
+		current_zone = GetNameOfZone(coords.x, coords.y, coords.z) or nil
+		GetZoneFromNameId(zoneName)
+		while nametable == nil do
+			Citizen.Wait(0)
+		end
 
-		if not statusPlane then
+		if IsEntityInZone(playerPed, "ISHEIST") then
+
+		end
+
+		if Config.WhiteListZone ~= nil or Config.WhiteListZone ~= '' then
+			print('Config.WhiteListZone',Config.WhiteListZone)
+			for k,v in pairs(Config.WhiteListZone) do
+				if IsEntityInZone(playerPed, v) == v then
+					print('Zone Fly White List',IsEntityInZone(playerPed, v))
+					return false
+				else
+					return true
+				end
+			end
+		end
+
+
+
+		if not statusVehicle then
 			if not IsEntityDead(playerPed) and IsPedInAnyVehicle(playerPed, false) and (IsPedInAnyPlane(playerPed, true) or IsPedInAnyHeli(playerPed,true)) and IsEntityInAir(vehicle) then
 				if GetPedInVehicleSeat(GetVehiclePedIsIn(ESX.PlayerData.ped), -1) == ESX.PlayerData.ped then
 					if DoesEntityExist(vehicle) and not IsEntityDead(playerPed) and (IsPedInAnyPlane(playerPed, true) or IsPedInAnyHeli(playerPed,true)) and IsEntityInAir(vehicle) then
@@ -30,33 +52,44 @@ Citizen.CreateThread(function()
 
 									if not License or not isOwnedVehicle then
 
-										statusPlane = true
+										statusVehicle = true
+
 										if Config.Wanted then
 											SetPlayerWantedLevel(PlayerId(), 4, false)
 											SetPlayerWantedLevelNow(PlayerId(), true)
 											SetDispatchCopsForPlayer(PlayerId(), true)
 										end
-										planeVeh = CreatePlane(Px+250, Py+250, Pz+50)
 
-
-										while not DoesEntityExist(planeVeh) do
-											Wait(1)
-										end
-										planePed = CreatePlanePed(planeVeh)
-										while not DoesEntityExist(planePed) do
-											Wait(1)
+										if IsPedInAnyPlane(playerPed, true) then
+											attackVehicle = CreatePlane(Px+250, Py+250, Pz+50)
+											while not DoesEntityExist(attackVehicle) do
+												Wait(1)
+											end
 										end
 
-										SetPedKeepTask(planePed, true)
-										SetPedShootRate(planePed,  750)
+										if IsPedInAnyHeli(playerPed,true) then
+											attackVehicle = CreateHelicopterPed(Config.SpawnHelicopter)
+											while not DoesEntityExist(attackVehicle) do
+												Wait(1)
+											end
+										end
 
-										SetPedAsEnemy(planePed,true)
-										SetPedMaxHealth(planePed, 900)
-										SetPedAlertness(planePed, 3)
-										SetPedCombatRange(planePed, 0)
-										SetPedCombatMovement(planePed, 3)
-										SetPedAccuracy(planePed, 70)
-										TaskPlaneMission(planePed, planeVeh, vehicle, 0, 0.0,0.0,0.0, 6, 0.0, 100.0, 0.0, 2500.0, -1500.0)
+										pilotPed = CreatePlanePed(attackVehicle)
+
+										while not DoesEntityExist(pilotPed) do
+											Wait(1)
+										end
+
+										SetPedKeepTask(pilotPed, true)
+										SetPedShootRate(pilotPed,  750)
+
+										SetPedAsEnemy(pilotPed,true)
+										SetPedMaxHealth(pilotPed, 900)
+										SetPedAlertness(pilotPed, 3)
+										SetPedCombatRange(pilotPed, 0)
+										SetPedCombatMovement(pilotPed, 3)
+										SetPedAccuracy(pilotPed, 70)
+										TaskPlaneMission(pilotPed, attackVehicle, vehicle, 0, 0.0,0.0,0.0, 6, 0.0, 100.0, 0.0, 2500.0, -1500.0)
 
 										PlaySoundFrontend(-1, "Bomb_Disarmed", "GTAO_Speed_Convoy_Soundset", 0)
 										Wait(2000)
@@ -72,35 +105,39 @@ Citizen.CreateThread(function()
 						else
 							ESX.TriggerServerCallback('esx_interceptor:requestPlayerCars', function(isOwnedVehicle)
 									if not isOwnedVehicle then
-										statusPlane = true
+										statusVehicle = true
 										if Config.Wanted then
 											SetPlayerWantedLevel(PlayerId(), 4, false)
 											SetPlayerWantedLevelNow(PlayerId(), true)
 											SetDispatchCopsForPlayer(PlayerId(), true)
 										end
 
-
-										planeVeh = CreatePlane(Px+250, Py+250, Pz+50)
-
-
-										while not DoesEntityExist(planeVeh) do
-											Wait(1)
+										if IsPedInAnyPlane(playerPed, true) then
+											attackVehicle = CreatePlane(Px+250, Py+250, Pz+50)
 										end
-										planePed = CreatePlanePed(planeVeh)
-										while not DoesEntityExist(planePed) do
-											Wait(1)
+										if IsPedInAnyHeli(playerPed,true) then
+											attackVehicle = CreateHelicopterPed(Config.SpawnHelicopter)
 										end
 
-										SetPedKeepTask(planePed, true)
-										SetPedShootRate(planePed,  750)
+										while not DoesEntityExist(attackVehicle) do
+											Wait(1)
+										end
+										pilotPed = CreatePlanePed(attackVehicle)
 
-										SetPedAsEnemy(planePed,true)
-										SetPedMaxHealth(planePed, 900)
-										SetPedAlertness(planePed, 3)
-										SetPedCombatRange(planePed, 0)
-										SetPedCombatMovement(planePed, 3)
-										SetPedAccuracy(planePed, 70)
-										TaskPlaneMission(planePed, planeVeh, vehicle, 0, 0.0,0.0,0.0, 6, 0.0, 100.0, 0.0, 2500.0, -1500.0)
+										while not DoesEntityExist(pilotPed) do
+											Wait(1)
+										end
+
+										SetPedKeepTask(pilotPed, true)
+										SetPedShootRate(pilotPed,  750)
+
+										SetPedAsEnemy(pilotPed,true)
+										SetPedMaxHealth(pilotPed, 900)
+										SetPedAlertness(pilotPed, 3)
+										SetPedCombatRange(pilotPed, 0)
+										SetPedCombatMovement(pilotPed, 3)
+										SetPedAccuracy(pilotPed, 70)
+										TaskPlaneMission(pilotPed, attackVehicle, vehicle, 0, 0.0,0.0,0.0, 6, 0.0, 100.0, 0.0, 2500.0, -1500.0)
 
 										PlaySoundFrontend(-1, "Bomb_Disarmed", "GTAO_Speed_Convoy_Soundset", 0)
 										Wait(2000)
@@ -119,17 +156,17 @@ Citizen.CreateThread(function()
 		end
 
 
-		if statusPlane then
-			if not DoesEntityExist(planeVeh) or IsEntityDead(planePed) or IsEntityDead(playerPed) or not IsEntityInAir(vehicle) then
-				statusPlane = false
+		if statusVehicle then
+			if not DoesEntityExist(attackVehicle) or IsEntityDead(pilotPed) or IsEntityDead(playerPed) or not IsEntityInAir(vehicle) then
+				statusVehicle = false
 				Wait(10000)
-				deletePlane(planeVeh, planePed)
+				deleteVehicle(attackVehicle, pilotPed)
 			end
 
 			if not (IsPedInAnyPlane(playerPed, true) or IsPedInAnyHeli(playerPed, true)) or not IsEntityInAir(vehicle) then
-				statusPlane = false
+				statusVehicle = false
 				Wait(10000)
-				deletePlane(planeVeh, planePed)
+				deleteVehicle(attackVehicle, pilotPed)
 			end
 
 		end
@@ -162,67 +199,67 @@ function CreateHelicopterPed(vehicle)
 			while not HasModelLoaded(model) do
 				Wait(1)
 			end
-			local ped = CreatePedInsideVehicle(vehicle, 26, model, -1, true, false)
+			pilotPed = CreatePedInsideVehicle(vehicle, 26, model, -1, true, false)
 
-			NetworkRegisterEntityAsNetworked(ped)
-			SetNetworkIdCanMigrate(NetworkGetNetworkIdFromEntity(ped), true)
-			SetNetworkIdExistsOnAllMachines(NetworkGetNetworkIdFromEntity(ped), true)
+			NetworkRegisterEntityAsNetworked(pilotPed)
+			SetNetworkIdCanMigrate(NetworkGetNetworkIdFromEntity(pilotPed), true)
+			SetNetworkIdExistsOnAllMachines(NetworkGetNetworkIdFromEntity(pilotPed), true)
 			--SetPedCanSwitchWeapon(ped, true)
 
-			SetPedKeepTask(ped, true)
-			SetPedShootRate(ped,  550)
-			SetPedAsEnemy(ped,true)
-			SetPedMaxHealth(ped, 900)
-			SetPedAlertness(ped, 3) --Сразу готов к бою, не требуется стрелять в него
+			SetPedKeepTask(pilotPed, true)
+			SetPedShootRate(pilotPed,  550)
+			SetPedAsEnemy(pilotPed,true)
+			SetPedMaxHealth(pilotPed, 900)
+			SetPedAlertness(pilotPed, 3) --Сразу готов к бою, не требуется стрелять в него
 			--SetPedCombatRange(ped, 0)
-			SetPedCombatMovement(ped, 2)
-			SetPedAccuracy(ped, 30) --Меткость, слишком метких не нужно пусть ведут огонь косо
+			SetPedCombatMovement(pilotPed, 2)
+			SetPedAccuracy(pilotPed, 30) --Меткость, слишком метких не нужно пусть ведут огонь косо
 			--SetVehicleForwardSpeed(ped,60.0)
-			SetHeliBladesFullSpeed(ped) -- works for planes I guess
-			SetVehicleEngineOn(ped, true, true, false)
-			SetEntityAsMissionEntity(ped, true, true)
+			SetHeliBladesFullSpeed(pilotPed) -- works for planes I guess
+			SetVehicleEngineOn(pilotPed, true, true, false)
+			SetEntityAsMissionEntity(pilotPed, true, true)
 
-			SetBlockingOfNonTemporaryEvents(ped, true)
-			SetEntityAsMissionEntity(ped, true, true)
+			SetBlockingOfNonTemporaryEvents(pilotPed, true)
+			SetEntityAsMissionEntity(pilotPed, true, true)
 			SetModelAsNoLongerNeeded(model)
-			return ped
+			return pilotPed
 		end
 	end
-	statusHelicopter = true
 end
 
 
 --Spawn plane
 function CreatePlane(x, y, z)
-	local PlaneModel = GetHashKey(Config.Interceptor)
+	local PlaneModel = GetHashKey(Config.PlaneModel)
 	if IsModelValid(PlaneModel) then
 		if IsThisModelAPlane(PlaneModel) then
 			RequestModel(PlaneModel)
 			while not HasModelLoaded(PlaneModel) do
 				Wait(1)
 			end
-			if not DoesEntityExist(planeVeh) then
+
+			if not DoesEntityExist(attackVehicle) then
 				ESX.ShowAdvancedNotification(_U('Dispatcher'),_U('Illegal_aircraft_title'),_U('Illegal_aircraft'), "CHAR_MP_ARMY_CONTACT", 8, 1, 1, 130)
 				Wait(2000)
-				planeVeh = CreateVehicle(PlaneModel, x, y, z, 0, true, false)
+				attackVehicle = CreateVehicle(PlaneModel, x, y, z, 0, true, false)
 
-				SetEntityAsMissionEntity(planeVeh, true, true)
-				SetVehicleEngineOn(planeVeh, true, true, false)
-				blipPlane = AddBlipForEntity(planeVeh)
-				SetBlipSprite(blipPlane, 16)
-				SetBlipFlashes(blipPlane, true)
-				SetBlipColour(blipPlane,  75)
-				SetBlipFlashTimer(blipPlane, 5000)
-				SetBlipDisplay(blipPlane, 4)
+				SetEntityAsMissionEntity(attackVehicle, true, true)
+				SetVehicleEngineOn(attackVehicle, true, true, false)
+				blipVehicle = AddBlipForEntity(attackVehicle)
+				SetBlipSprite(blipVehicle, 16)
+				SetBlipFlashes(blipVehicle, true)
+				SetBlipColour(blipVehicle,  75)
+				SetBlipFlashTimer(blipVehicle, 5000)
+				SetBlipDisplay(blipVehicle, 4)
 
-				SetBlipScale(blipPlane, 1.0)
-				SetBlipAsShortRange(blipPlane, true)
+				SetBlipScale(blipVehicle, 1.0)
+				SetBlipAsShortRange(blipVehicle, true)
 
 				BeginTextCommandSetBlipName("STRING")
 				AddTextComponentString(_U('Interceptor'))
-				EndTextCommandSetBlipName(blipPlane)
+				EndTextCommandSetBlipName(blipVehicle)
 				SetModelAsNoLongerNeeded(PlaneModel)
-				return planeVeh
+				return attackVehicle
 			else
 				ESX.ShowAdvancedNotification(_U('Dispatcher'), _U('Illegal_takeoff'),_U('Interceptor_recalled'), "CHAR_MP_ARMY_CONTACT", 8, 1, 1, 130)
 			end
@@ -233,73 +270,51 @@ end
 --Создаем вертолет
 function CreateHelicopter(x, y, z)
 	local HelicopterModel = GetHashKey(Config.HelicopterModel) --buzzard Savage
-
 	if IsModelValid(HelicopterModel) then
 		if IsThisModelAHeli(HelicopterModel) then
 			RequestModel(HelicopterModel)
 			while not HasModelLoaded(HelicopterModel) do
 				Wait(1)
 			end
-			if not DoesEntityExist(HelicopterVeh) then
+			if not DoesEntityExist(attackVehicle) then
 				local _, vector = GetNthClosestVehicleNode(x, y, z, math.random(5, 10), 0, 0, 0)
 				local sX, sY, sZ = table.unpack(vector)
 				ESX.ShowAdvancedNotification(_U('Dispatcher'),_U('Illegal_Helicopter_title'),_U('Illegal_Helicopter'), "CHAR_MP_ARMY_CONTACT", 8, 1, 1, 130)
 				Wait(2000)
-				HelicopterVeh = CreateVehicle(HelicopterModel, sX, sY, sZ+100, 0, true, false)
+				attackVehicle = CreateVehicle(HelicopterModel, sX, sY, sZ+100, 0, true, false)
 
-				SetEntityAsMissionEntity(HelicopterVeh, true, true)
-				SetVehicleEngineOn(HelicopterVeh, true, true, false)
+				SetEntityAsMissionEntity(attackVehicle, true, true)
+				SetVehicleEngineOn(attackVehicle, true, true, false)
 
-				blipHelicopter = AddBlipForEntity(HelicopterVeh)
-				SetBlipSprite(blipHelicopter, 602)
-				SetBlipFlashes(blipHelicopter, true)
-				SetBlipColour(blipHelicopter,  75)
-				SetBlipFlashTimer(blipHelicopter, 5000)
-				SetBlipDisplay(blipHelicopter, 4)
+				blipVehicle = AddBlipForEntity(attackVehicle)
+				SetBlipSprite(blipVehicle, 602)
+				SetBlipFlashes(blipVehicle, true)
+				SetBlipColour(blipVehicle,  75)
+				SetBlipFlashTimer(blipVehicle, 5000)
+				SetBlipDisplay(blipVehicle, 4)
 
-				SetBlipScale(blipHelicopter, 1.0)
-				SetBlipAsShortRange(blipHelicopter, true)
+				SetBlipScale(blipVehicle, 1.0)
+				SetBlipAsShortRange(blipVehicle, true)
 
 				BeginTextCommandSetBlipName("STRING")
 				AddTextComponentString(_U('InterceptorHelicopter'))
-				EndTextCommandSetBlipName(blipHelicopter)
+				EndTextCommandSetBlipName(blipVehicle)
 				SetModelAsNoLongerNeeded(HelicopterModel)
-				return HelicopterVeh
+				return attackVehicle
 			end
 		end
 	end
 end
 
-
-function deleteHelicopter(vehicle, driver)
+function deleteVehicle(vehicle, driver)
 	if DoesEntityExist(vehicle) then
 		local blip = GetBlipFromEntity(vehicle)
 		if DoesBlipExist(blip) then
 			RemoveBlip(blip)
 		end
-		DeleteEntity(driver)
-		DeleteEntity(vehicle)
 	end
-
-	if not DoesEntityExist(vehicle) and DoesEntityExist(driver) then
-		DeleteEntity(driver)
-	end
-	statusHelicopter = false
-end
-
-function deletePlane(vehicle, driver)
-	if DoesEntityExist(vehicle) then
-		local blip = GetBlipFromEntity(vehicle)
-		if DoesBlipExist(blip) then
-			RemoveBlip(blip)
-		end
-		DeleteEntity(driver)
-		DeleteEntity(vehicle)
-	end
-
-	if not DoesEntityExist(vehicle) and DoesEntityExist(driver) then
-		DeleteEntity(driver)
-	end
+	DeleteEntity(driver)
+	DeleteEntity(vehicle)
 end
 
 
