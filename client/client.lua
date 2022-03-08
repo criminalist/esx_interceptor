@@ -31,9 +31,11 @@ Citizen.CreateThread(function()
 									if not License or not isOwnedVehicle then
 
 										statusPlane = true
-										SetPlayerWantedLevel(PlayerId(), 4, false)
-										SetPlayerWantedLevelNow(PlayerId(), true)
-										SetDispatchCopsForPlayer(PlayerId(), true)
+										if Config.Wanted then
+											SetPlayerWantedLevel(PlayerId(), 4, false)
+											SetPlayerWantedLevelNow(PlayerId(), true)
+											SetDispatchCopsForPlayer(PlayerId(), true)
+										end
 										planeVeh = CreatePlane(Px+250, Py+250, Pz+50)
 
 
