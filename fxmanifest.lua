@@ -1,6 +1,6 @@
 fx_version 'cerulean'
 games {'gta5'}
-resource_version '1.2.2 By criminalist'
+resource_version '1.2.4 By criminalist'
 description 'ESX Interceptor'
 
 client_scripts {
